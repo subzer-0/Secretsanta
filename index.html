@@ -4,83 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secret Santa</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-        }
-        .button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        .button:hover {
-            background-color: #0056b3;
-        }
-        .results {
-            margin-top: 20px;
-            font-size: 18px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Secret Santa</h1>
-    <p>Click the button to assign Secret Santa pairs!</p>
-    <button class="button" onclick="assignSecretSanta()">Assign</button>
-    <div class="results" id="results"></div>
-
     <script>
-        let names = ["Patience", "Claire", "Zippy", "Cyrus","Oscent"];
-        let assignedPairs = null; // Store the assigned pairs globally
+        let savedPairs = null;
 
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        function generateSecretSanta() {
+            if (savedPairs) {
+                displayPairs(savedPairs);
+                return;
             }
+
+            const givers = ["Habib", "Emma", "Patience", "Cyrus", "Gidudu"];
+            const receivers = ["Zippy", "Claire", "Oscent", "Cyrus", "Patience"];
+
+            if (new Set(receivers).size !== receivers.length) {
+                alert("All receivers must have unique names.");
+                return;
+            }
+
+            let shuffledReceivers = [...receivers];
+
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            shuffle(shuffledReceivers);
+
+            while (givers.some((giver, index) => giver === shuffledReceivers[index])) {
+                shuffle(shuffledReceivers);
+            }
+
+            savedPairs = givers.map((giver, index) => `${giver} -> ${shuffledReceivers[index]}`);
+            displayPairs(savedPairs);
         }
 
-        function assignSecretSanta() {
-            if (assignedPairs) {
-                // If pairs are already assigned, show them
-                document.getElementById('results').innerHTML = assignedPairs.join('<br>');
-                return;
-            }
-
-            if (names.length < 2) {
-                document.getElementById('results').innerText = "Not enough names left for Secret Santa!";
-                return;
-            }
-
-            // Clone and shuffle the array
-            const givers = [...names];
-            const receivers = [...names];
-            shuffleArray(receivers);
-
-            const pairs = [];
-
-            for (let i = 0; i < givers.length; i++) {
-                let giver = givers[i];
-                let receiverIndex = receivers.findIndex(r => r !== giver);
-
-                if (receiverIndex === -1) {
-                    document.getElementById('results').innerText = "Error: Unable to assign unique pairs. Please try again.";
-                    return;
-                }
-
-                let receiver = receivers.splice(receiverIndex, 1)[0];
-                pairs.push(`${giver} → ${receiver}`);
-            }
-
-            assignedPairs = pairs; // Save the pairs to prevent changes
-            document.getElementById('results').innerHTML = pairs.join('<br>');
+        function displayPairs(pairs) {
+            const resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "<h2>Secret Santa Pairs</h2><ul>" + pairs.map(pair => `<li>${pair}</li>`).join('') + "</ul>";
         }
     </script>
+</head>
+<body>
+    <h1>Secret Santa Generator</h1>
+    <button onclick="generateSecretSanta()">Generate Pairs</button>
+    <div id="result"></div>
 </body>
 </html>
